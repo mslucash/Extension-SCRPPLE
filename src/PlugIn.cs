@@ -91,7 +91,11 @@ namespace Landis.Extension.SocialClimateFire
         //---------------------------------------------------------------------
 
         public override void Initialize()
+
         {
+            Console.WriteLine("Attach process to Visual Studio for debugging and hit return");
+            Console.ReadLine();     // JM:  added for debugging.  use this to stop the run to allow me to attach visual studio to the dotnet process
+            
             Timestep = 1;  // RMS:  Initially we will force annual time step. parameters.Timestep;
 
             modelCore.UI.WriteLine("Initializing Fire...");
