@@ -378,7 +378,7 @@ namespace Landis.Extension.SocialClimateFire
         //  Use species level variables for bark thickness accumulation with age to calculate cohort level mortality. 
         // the cohort level mortality is a binomial distribution  
 
-        int IDisturbance.ReduceOrKillMarkedCohort(ICohort cohort)
+        double IDisturbance.ReduceOrKillMarkedCohort(ICohort cohort)
         {
             this.AvailableCohorts++;
 
@@ -435,10 +435,10 @@ namespace Landis.Extension.SocialClimateFire
             if (killCohort)
             {
                 this.CohortsKilled++;
-                return cohort.Data.Biomass;
+                return 1.0; // cohort.Data.Biomass;
             }
 
-            return 0;
+            return 0.0;
 
         }
 
