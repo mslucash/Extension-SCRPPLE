@@ -92,6 +92,9 @@ namespace Landis.Extension.SocialClimateFire
 
         public override void Initialize()
         {
+            Console.WriteLine("Attach process to Visual Studio for debugging and hit return");
+            Console.ReadLine();     // JM:  added for debugging.  use this to stop the run to allow me to attach visual studio to the dotnet process
+
             Timestep = 1;  // RMS:  Initially we will force annual time step. parameters.Timestep;
 
             modelCore.UI.WriteLine("Initializing Fire...");
@@ -783,16 +786,19 @@ namespace Landis.Extension.SocialClimateFire
             int numIgnitions = 0;
             if (IgnitionDist == IgnitionDistribution.Poisson)
             {
-                //Draw from a poisson distribution  with lambda equal to the log link (b0 +b0 *fireweather )
-                double possibleIgnitions = ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
-               // Because the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
-               // a integer as the response. 
-               // Whole Number
-                int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
-                numIgnitions += floorPossibleIginitions;
-                // Remainder 
-                numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
-                //modelCore.UI.WriteLine("   Processing landscape for Fire events.  Possible={0}, Rounded={1}", possibleIgnitions, numIgnitions);
+                var lambda = Math.Exp(b0 + (b1 * fireWeatherIndex));
+                numIgnitions = PoissonInv(lambda, modelCore.NextDouble());
+
+               // //Draw from a poisson distribution  with lambda equal to the log link (b0 +b0 *fireweather )
+               // double possibleIgnitions = ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
+               //// Because the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
+               //// a integer as the response. 
+               //// Whole Number
+               // int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
+               // numIgnitions += floorPossibleIginitions;
+               // // Remainder 
+               // numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
+               // //modelCore.UI.WriteLine("   Processing landscape for Fire events.  Possible={0}, Rounded={1}", possibleIgnitions, numIgnitions);
             } else
             {
                 // Zero Inflated: Requires two additional variables 
@@ -812,22 +818,25 @@ namespace Landis.Extension.SocialClimateFire
                 /// The Binomial portion of the draw: 
                 /// Probability of a zero is caculated then a random draw is checked agianst this 
                 /// If greater than the probability of zero the Poisson section is used. 
-                double BinomDraw = modelCore.NextDouble();
+                var binomDraw = modelCore.NextDouble();
                 /// alpha= reverse logit link of the regression values and FWI
-                double alpha = Math.Pow(Math.E, (binomb0 + (binomb1 * fireWeatherIndex)));
-                double zerosprob = alpha / (alpha + 1);
-                if (BinomDraw >= zerosprob)
+                var alpha = Math.Exp(binomb0 + (binomb1 * fireWeatherIndex));
+                var zerosprob = alpha / (alpha + 1);
+                if (binomDraw >= zerosprob)
                 {
-                    /// If yes the mean of possion draw with reverse log link of regression variables. 
-                    double  possibleIgnitions=ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
-                    ///Because the the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
-                    /// a integer as the response. 
-                    /// 
-                    /// Whole Number
-                    int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
-                    numIgnitions += floorPossibleIginitions;
-                    /// Remainder 
-                    numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
+                    var lambda = Math.Exp(b0 + (b1 * fireWeatherIndex));
+                    numIgnitions = PoissonInv(lambda, modelCore.NextDouble());
+
+                    ///// If yes the mean of possion draw with reverse log link of regression variables. 
+                    //double possibleIgnitions =ModelCore.PoissonDistribution.Lambda = Math.Pow(Math.E, (b0 + (b1 * fireWeatherIndex)));
+                    /////Because the the Core Poisson Distribution Lambda returns the population mean we transform it to the whole number + the probability of the remainder to get 
+                    ///// a integer as the response. 
+                    ///// 
+                    ///// Whole Number
+                    //int floorPossibleIginitions = (int)Math.Floor(possibleIgnitions);
+                    //numIgnitions += floorPossibleIginitions;
+                    ///// Remainder 
+                    //numIgnitions += (modelCore.GenerateUniform() <= (possibleIgnitions - (double)floorPossibleIginitions) ? 1 : 0);
                 }
                 else
                 {
@@ -837,6 +846,24 @@ namespace Landis.Extension.SocialClimateFire
             return numIgnitions;
         }
 
+        private static int PoissonInv(double lambda, double p)
+        {
+            // returns the inverse of a Poisson distribution of average lambda for probability p
+            // simple, brute-force algorithm, not efficient for large lambda
+            var j = 0;
+            var p1 = p / Math.Exp(-lambda);
+            var a = 1.0;
+            var c = 1.0;
+
+            while (c < p1)
+            {
+                j++;
+                a *= lambda / j;
+                c += a;
+            }
+
+            return j;
+        }
 
         //---------------------------------------------------------------------
 
