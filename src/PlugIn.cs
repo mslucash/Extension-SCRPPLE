@@ -767,7 +767,7 @@ namespace Landis.Extension.SocialClimateFire
         //---------------------------------------------------------------------
 
         //  Determines the number of Ignitions per day
-        //  Returns: 0 <= numIgnitons <= 3
+        
         private static int NumberOfIgnitions(IgnitionType ignitionType, double fireWeatherIndex)
         {
             double b0 = 0.0;
