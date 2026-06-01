@@ -583,7 +583,9 @@ namespace Landis.Extension.SocialClimateFire
             double UaUb = windSpeed / combustionBuoyancy;
             double slopeRadians = (double)SiteVars.GroundSlope[site] / 180.0 * Math.PI; //convert from Degrees to Radians
             double slopeAngle = (double)SiteVars.UphillSlopeAzimuth[site];
-            double relativeWindDirection = (windDirection - slopeAngle) / 180.0 * Math.PI;
+            //double relativeWindDirection = (windDirection - slopeAngle) / 180.0 * Math.PI;
+
+            double relativeWindDirection = (windDirection - slopeAngle + 180.0) * Math.PI / 180.0;
 
             // From R.M. Nelson Intl J Wildland Fire, 2002
             // Eq Number 5
