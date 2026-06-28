@@ -331,8 +331,8 @@ namespace Landis.Extension.SocialClimateFire
                 + (siteEffectiveWindSpeed * Beta_Windspeed)
                 + (WaterDeficit * Beta_Water_Deficit)
                 + (ladderFuelBiomass * Beta_LadderFuels)
-                //+ (fineFuelPercent * Beta_Fuel)), .0005), -1.0); 
-                +(SiteVars.FineFuels[site] * Beta_Fuel)), .0005), -1.0);
+                + (fineFuelPercent * Beta_Fuel)), .0005), -1.0); 
+                //+(SiteVars.FineFuels[site] * Beta_Fuel)), .0005), -1.0); //ML was some testing to see if fine fuels worked better than %. 
 
             siteMortality = Math.Max(siteMortality, 0.0);  // In the long-run, this shouldn't be necessary.  But useful for testing.
 
@@ -531,10 +531,10 @@ namespace Landis.Extension.SocialClimateFire
             double spreadB2 = PlugIn.Parameters.SpreadProbabilityB2;
             double spreadB3 = PlugIn.Parameters.SpreadProbabilityB3;
 
-            //double Pspread = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * fineFuelPercent) + (spreadB3 * effectiveWindSpeed)));
+            double Pspread = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * fineFuelPercent) + (spreadB3 * effectiveWindSpeed)));
 
-            double Pspread = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * SiteVars.FineFuels[site]) + (spreadB3 * effectiveWindSpeed)));
-            Pspread = 1.0 / (1.0 + Pspread);
+            //double Pspread = Math.Pow(Math.E, -1.0 * (spreadB0 + (spreadB1 * fireWeatherIndex) + (spreadB2 * SiteVars.FineFuels[site]) + (spreadB3 * effectiveWindSpeed)));
+            Pspread = 1.0 / (1.0 + Pspread); //ML part of testing with FF magnitude (see L334)
             
             //The distance weight accounts for the longer centroid distance between diagonal spread 
             // as compared to cardinal spread.  This is intended to correct the 'square effect' when Pspread is relatively uniform. 
